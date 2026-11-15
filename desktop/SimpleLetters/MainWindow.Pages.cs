@@ -38,6 +38,13 @@ public partial class MainWindow
 
     static double SheetTop(int page) => page * (Dip(PageHeightMm) + PageGap);
 
+    // A RichTextBox keeps a little room for the caret on each side of its text.
+    // The editor is made wider by that much and moved left, so the room sits in
+    // the margins and the text lines up with them.
+    double EditorInsetLeft => Inset(Editor.Document.PagePadding.Left);
+    double EditorInsetRight => Inset(Editor.Document.PagePadding.Right);
+    static double Inset(double padding) => double.IsNaN(padding) ? 5 : padding;
+
     void InitPages()
     {
         EditorHost.RenderTransform = hostShift;
@@ -70,7 +77,8 @@ public partial class MainWindow
     {
         double sheetW = Dip(PageWidthMm), sheetH = Dip(PageHeightMm);
         double left = Dip(settings.MarginLeft), top = Dip(settings.MarginTop);
-        double textW = sheetW - left - Dip(settings.MarginRight);
+        double inset = EditorInsetLeft;
+        double textW = sheetW - left - Dip(settings.MarginRight) + inset + EditorInsetRight; // the editor's width
         double textH = sheetH - top - Dip(settings.MarginBottom);
 
         // Where each line of text starts, top to bottom.
@@ -156,7 +164,7 @@ public partial class MainWindow
             var view = sliceViews[i];
             view.Width = textW;
             view.Height = height;
-            Canvas.SetLeft(view, left);
+            Canvas.SetLeft(view, left - inset);
             Canvas.SetTop(view, s.Shift + s.Start);
             ((VisualBrush)view.Fill).Viewbox = new Rect(0, s.Start, textW, height);
         }
@@ -184,7 +192,7 @@ public partial class MainWindow
         }
         Guides.Clip = paper;
 
-        hostShift.X = left;
+        hostShift.X = left - inset;
         SetLivePage(livePage, force: true);
 
         if (scrollToCaret)

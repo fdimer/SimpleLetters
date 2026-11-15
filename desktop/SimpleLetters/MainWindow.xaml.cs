@@ -129,7 +129,9 @@ public partial class MainWindow : Window
         double left = settings.MarginLeft, right = settings.MarginRight;
         double w = Page.Width, h = Dip(PageHeightMm);
 
-        Editor.Width = w - Dip(left) - Dip(right);
+        // The editor is wider than the writing area by its own side padding, so
+        // the text itself starts and wraps exactly at the margins, as it prints.
+        Editor.Width = w - Dip(left) - Dip(right) + EditorInsetLeft + EditorInsetRight;
 
         Place(Side.Left, Dip(left));
         Place(Side.Right, w - Dip(right));
